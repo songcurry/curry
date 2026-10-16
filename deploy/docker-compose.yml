@@ -1,0 +1,18 @@
+name: friend-wall
+
+services:
+  friendwall:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: friend-wall:latest
+    container_name: friendwall
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - ADMIN_PASSWORD=admin123     # ⚠️ 改成你的密码
+    volumes:
+      # 数据持久化：容器删了数据还在
+      - ./data:/app/data
