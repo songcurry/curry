@@ -1,0 +1,17 @@
+{
+  "name": "friend-wall",
+  "version": "1.0.0",
+  "description": "朋友说 · 个人评价墙（三端：官网展示 / 朋友填写 / 站长后台）",
+  "private": true,
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "keywords": ["testimonials", "wall", "personal-site"],
+  "license": "MIT"
+}

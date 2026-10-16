@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="aurora">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>朋友说 · 我的评价墙</title>
+<meta name="description" content="朋友们真诚的评价与鼓励">
+<link rel="stylesheet" href="../shared/style.css">
+<link rel="stylesheet" href="assets/index.css">
+</head>
+<body>
+
+<!-- 背景层 -->
+<div class="bg-layer">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+  <div class="bg-grain"></div>
+</div>
+
+<!-- 导航 -->
+<nav class="nav" id="nav">
+  <span class="nav-logo" id="nav-logo">朋友说</span>
+  <div class="nav-links">
+    <a href="#wall">评价墙</a>
+    <a href="#about">关于</a>
+    <a href="#now">近况</a>
+  </div>
+  <a class="nav-cta" href="../write/">写一句话 →</a>
+</nav>
+
+<!-- ===== 沉浸式首屏 ===== -->
+<header class="hero" id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-inner wrap">
+    <div class="hero-badge chip">
+      <span class="dot"></span><span id="hero-count">0</span> 位朋友留下了话
+    </div>
+    <h1 class="hero-name" id="hero-name" data-text="朋友眼中的我">朋友眼中的我</h1>
+    <p class="hero-tagline" id="hero-tagline">这里收集着朋友们真诚的评价与鼓励</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#wall">看看他们说了什么</a>
+      <a class="btn btn-ghost" href="../write/">我也想留一句</a>
+    </div>
+  </div>
+  <div class="scroll-hint"><span></span></div>
+</header>
+
+<main>
+  <!-- ===== 评价墙 ===== -->
+  <section class="section" id="wall">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="section-kicker">01 / WALL</span>
+        <h2 class="section-title">评价墙</h2>
+        <p class="section-sub">每颗星都是一个人留下的话 · 移动光标靠近，点击展开</p>
+      </div>
+      <div class="starmap" id="starmap"></div>
+    </div>
+  </section>
+
+  <!-- ===== 关于 ===== -->
+  <section class="section" id="about">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="section-kicker">02 / ABOUT</span>
+        <h2 class="section-title">关于我</h2>
+      </div>
+      <div class="about-card glass reveal">
+        <span class="avatar about-avatar" id="about-avatar">你</span>
+        <p class="about-text" id="about-text"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 近况 ===== -->
+  <section class="section" id="now">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="section-kicker">03 / NOW</span>
+        <h2 class="section-title">最近的近况</h2>
+      </div>
+      <div class="now-grid" id="now-grid"></div>
+
+      <div class="links-row" id="links-row"></div>
+    </div>
+  </section>
+
+  <!-- ===== 号召 ===== -->
+  <section class="section cta-section">
+    <div class="wrap center">
+      <div class="cta-card glass reveal">
+        <h2 class="cta-title">想对我说点什么吗？</h2>
+        <p class="cta-sub">一句鼓励、一段回忆，或者只是路过打个招呼 · 我都会认真读</p>
+        <a class="btn btn-primary cta-btn" href="../write/">写下你的话 →</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap between">
+    <span id="foot-left">© 2025 朋友说</span>
+    <a class="dim" href="../admin/">站长入口</a>
+  </div>
+</footer>
+
+<!-- 弹层 -->
+<div class="modal" id="t-modal">
+  <div class="modal-card glass">
+    <button class="modal-close" aria-label="关闭">✕</button>
+    <div class="modal-body"></div>
+  </div>
+</div>
+
+<script src="../shared/api.js"></script>
+<script src="assets/hero.js"></script>
+<script src="assets/starmap.js"></script>
+<script>
+/* 载入个人资料 + 留言 */
+(async function init(){
+  const p = await DB.getProfile();
+
+  document.getElementById('nav-logo').textContent = p.name;
+  document.getElementById('hero-name').dataset.text = p.name;
+  document.getElementById('hero-name').textContent = p.name;
+  document.getElementById('hero-tagline').textContent = p.tagline || '';
+  document.getElementById('about-text').textContent = p.about || '';
+  document.getElementById('foot-left').textContent = '© ' + new Date().getFullYear() + ' ' + p.name;
+
+  const av = document.getElementById('about-avatar');
+  av.innerHTML = p.avatar ? `<img src="${p.avatar}" alt="">` : (p.name || '你').slice(0,1);
+
+  // Now 列表
+  document.getElementById('now-grid').innerHTML = (p.now || []).map(n => `
+    <div class="now-item glass reveal">
+      <span class="now-k">${n.k}</span>
+      <span class="now-v">${n.v}</span>
+    </div>`).join('');
+
+  // 链接
+  document.getElementById('links-row').innerHTML = (p.links || []).map(l => `
+    <a class="link-pill glass" href="${l.url}" target="_blank" rel="noopener">
+      <span class="link-ic">${l.icon}</span><span>${l.name}</span><span class="dim">↗</span>
+    </a>`).join('');
+
+  // 留言数 + 星图
+  const list = await DB.getPublicTestimonials();
+  document.getElementById('hero-count').textContent = list.length;
+  StarMap.render();
+
+  // 首屏名字动画（等 DOM 就绪后）
+  const nameEl = document.getElementById('hero-name');
+  nameEl.dispatchEvent(new Event('reanimate') );
+
+  // 滚动导航
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('solid', window.scrollY > 40);
+  }, { passive: true });
+
+  StarMap.observeReveal();
+})();
+</script>
+</body>
+</html>

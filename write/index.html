@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="aurora">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>写一句话 · 朋友说</title>
+<link rel="stylesheet" href="../shared/style.css">
+<link rel="stylesheet" href="assets/write.css">
+</head>
+<body>
+
+<div class="bg-layer">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="bg-grain"></div>
+</div>
+
+<nav class="nav solid">
+  <a class="nav-logo" href="../site/" id="nav-logo">朋友说</a>
+  <a class="nav-cta" href="../site/">← 回到首页</a>
+</nav>
+
+<main class="write-main">
+  <div class="wrap narrow">
+
+    <!-- 成功态 -->
+    <section class="success-view hidden" id="success-view">
+      <div class="success-card glass">
+        <div class="success-icon">✓</div>
+        <h1 class="success-title">已经收到啦！</h1>
+        <p class="success-sub">谢谢你花时间写下这些话。<br>站长审核通过后，它就会出现在评价墙上 ✨</p>
+        <div class="flex gap-12" style="justify-content:center;margin-top:30px;flex-wrap:wrap">
+          <a class="btn btn-primary" href="../site/">去看看评价墙</a>
+          <button class="btn btn-ghost" id="again-btn">再写一条</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 表单 -->
+    <section id="form-view">
+      <div class="write-head">
+        <span class="section-kicker">WRITE</span>
+        <h1 class="write-title">给我留一句话</h1>
+        <p class="write-sub">一句鼓励、一段回忆，或者只是路过打个招呼——我都会认真读。</p>
+      </div>
+
+      <form class="form-card glass" id="t-form" novalidate>
+
+        <!-- 昵称 -->
+        <div class="field">
+          <label>你的称呼 <span class="req">*</span></label>
+          <input class="input" type="text" id="f-name" maxlength="20" placeholder="怎么称呼你？" required>
+        </div>
+
+        <!-- 头像 -->
+        <div class="field">
+          <label>头像 <span class="dim">（可选）</span></label>
+          <div class="avatar-upload">
+            <div class="avatar avatar-preview" id="avatar-preview">?</div>
+            <div class="avatar-actions">
+              <label class="btn btn-sm" for="f-avatar">上传图片</label>
+              <input type="file" id="f-avatar" accept="image/*" hidden>
+              <button type="button" class="btn btn-sm btn-ghost" id="avatar-clear">清除</button>
+              <p class="hint" style="margin-top:8px">不上传的话，会用你的首字母生成头像</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 关系 -->
+        <div class="field">
+          <label>我们的关系</label>
+          <div class="opts" id="relation-opts">
+            <span class="opt active" data-v="朋友">朋友</span>
+            <span class="opt" data-v="同事">同事</span>
+            <span class="opt" data-v="同学">同学</span>
+            <span class="opt" data-v="网友">网友</span>
+            <span class="opt" data-v="家人">家人</span>
+          </div>
+        </div>
+
+        <!-- 评分 -->
+        <div class="field">
+          <label>给我打个分 <span class="dim">（可选）</span></label>
+          <div class="stars" id="stars">
+            <button type="button" class="star" data-v="1">★</button>
+            <button type="button" class="star" data-v="2">★</button>
+            <button type="button" class="star" data-v="3">★</button>
+            <button type="button" class="star" data-v="4">★</button>
+            <button type="button" class="star" data-v="5">★</button>
+          </div>
+        </div>
+
+        <!-- 内容 -->
+        <div class="field">
+          <label>想说点什么 <span class="req">*</span>
+            <span class="counter" id="counter">0 / 300</span>
+          </label>
+          <textarea class="textarea" id="f-content" maxlength="300"
+            placeholder="比如：认识你以来，最想对你说的是……" required></textarea>
+          <div class="between mt-8">
+            <p class="hint" id="content-hint">写完后可以试试右侧的「AI 润色」</p>
+            <button type="button" class="btn btn-sm btn-polish" id="polish-btn">✦ AI 润色</button>
+          </div>
+        </div>
+
+        <!-- 公开 -->
+        <div class="field">
+          <label class="switch">
+            <input type="checkbox" id="f-public" checked>
+            <span class="track"></span>
+            <span>愿意公开展示在评价墙上 <span class="dim">（不勾选则仅站长可见）</span></span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary submit-btn" id="submit-btn">
+          提交我的留言 →
+        </button>
+        <p class="hint center mt-16">提交后会进入站长审核，通过后才会公开显示</p>
+      </form>
+    </section>
+
+  </div>
+</main>
+
+<script src="../shared/api.js"></script>
+<script src="assets/write.js"></script>
+</body>
+</html>

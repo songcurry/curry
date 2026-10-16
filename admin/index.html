@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="aurora">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>站长后台 · 朋友说</title>
+<link rel="stylesheet" href="../shared/style.css">
+<link rel="stylesheet" href="assets/admin.css">
+</head>
+<body class="admin-body">
+
+<div class="bg-layer"><div class="blob b1"></div><div class="blob b2"></div><div class="bg-grain"></div></div>
+
+<!-- ===== 登录 ===== -->
+<section class="login-view" id="login-view">
+  <div class="login-card glass">
+    <div class="login-logo">🔐</div>
+    <h1 class="login-title">站长入口</h1>
+    <p class="login-sub dim">请输入管理密码</p>
+    <input class="input" type="password" id="pw" placeholder="密码" autocomplete="current-password">
+    <button class="btn btn-primary login-btn" id="login-btn">进入后台</button>
+    <p class="hint center" id="login-hint">演示密码：admin123</p>
+  </div>
+</section>
+
+<!-- ===== 后台主体 ===== -->
+<div class="admin-view hidden" id="admin-view">
+
+  <!-- 侧栏 -->
+  <aside class="sidebar">
+    <div class="side-logo" id="side-logo">朋友说</div>
+    <nav class="side-nav">
+      <button class="side-item active" data-tab="pending">待审核 <b id="badge-pending" class="badge">0</b></button>
+      <button class="side-item" data-tab="published">已发布</button>
+      <button class="side-item" data-tab="stats">数据统计</button>
+      <button class="side-item" data-tab="profile">个人资料</button>
+    </nav>
+    <div class="side-foot">
+      <a class="side-item" href="../site/" target="_blank">↗ 查看官网</a>
+      <button class="side-item" id="reset-btn">↺ 重置演示数据</button>
+      <button class="side-item danger" id="logout-btn">⎋ 退出登录</button>
+    </div>
+  </aside>
+
+  <!-- 内容区 -->
+  <main class="admin-main">
+
+    <!-- 待审核 -->
+    <section class="tab-panel active" data-panel="pending">
+      <header class="panel-head">
+        <h2>待审核留言</h2>
+        <p class="dim">通过后才会出现在官网评价墙上</p>
+      </header>
+      <div class="card-list" id="pending-list"></div>
+    </section>
+
+    <!-- 已发布 -->
+    <section class="tab-panel" data-panel="published">
+      <header class="panel-head">
+        <h2>已发布留言</h2>
+        <p class="dim">可置顶、隐藏或删除</p>
+      </header>
+      <div class="card-list" id="published-list"></div>
+    </section>
+
+    <!-- 统计 -->
+    <section class="tab-panel" data-panel="stats">
+      <header class="panel-head"><h2>数据统计</h2></header>
+      <div class="stat-grid" id="stat-grid"></div>
+      <div class="glass chart-card">
+        <h3 class="chart-title">关系分布</h3>
+        <div class="bar-chart" id="bar-chart"></div>
+      </div>
+    </section>
+
+    <!-- 个人资料 -->
+    <section class="tab-panel" data-panel="profile">
+      <header class="panel-head"><h2>个人资料</h2><p class="dim">这些内容会显示在官网</p></header>
+      <form class="glass profile-form" id="profile-form">
+        <div class="field">
+          <label>名字</label>
+          <input class="input" id="p-name">
+        </div>
+        <div class="field">
+          <label>一句话签名</label>
+          <input class="input" id="p-tagline">
+        </div>
+        <div class="field">
+          <label>关于我</label>
+          <textarea class="textarea" id="p-about" style="min-height:100px"></textarea>
+        </div>
+        <div class="field">
+          <label>近况（每行一条，格式「在做：搭网站」）</label>
+          <textarea class="textarea" id="p-now" style="min-height:100px"></textarea>
+        </div>
+        <div class="field">
+          <label>社交链接（每行一条，格式「GitHub|#」）</label>
+          <textarea class="textarea" id="p-links" style="min-height:100px"></textarea>
+        </div>
+        <div class="field">
+          <label>主题配色</label>
+          <div class="opts" id="theme-opts">
+            <span class="opt active" data-v="aurora">极光蓝紫</span>
+            <span class="opt" data-v="cyber">赛博霓虹</span>
+            <span class="opt" data-v="mono">极简黑金</span>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">保存资料</button>
+        <span class="save-tip dim" id="save-tip"></span>
+      </form>
+    </section>
+
+  </main>
+</div>
+
+<!-- 编辑弹层 -->
+<div class="modal" id="edit-modal">
+  <div class="modal-card glass">
+    <button class="modal-close" aria-label="关闭">✕</button>
+    <h3 style="margin-bottom:20px">编辑留言</h3>
+    <div class="field"><label>称呼</label><input class="input" id="e-name"></div>
+    <div class="field"><label>内容</label><textarea class="textarea" id="e-content" style="min-height:120px"></textarea></div>
+    <div class="field"><label>关系</label>
+      <div class="opts" id="e-relation">
+        <span class="opt" data-v="朋友">朋友</span>
+        <span class="opt" data-v="同事">同事</span>
+        <span class="opt" data-v="同学">同学</span>
+        <span class="opt" data-v="网友">网友</span>
+        <span class="opt" data-v="家人">家人</span>
+      </div>
+    </div>
+    <div class="field"><label>评分</label><input class="input" type="number" id="e-rating" min="0" max="5"></div>
+    <button class="btn btn-primary" id="edit-save">保存修改</button>
+  </div>
+</div>
+
+<script src="../shared/api.js"></script>
+<script src="assets/admin.js"></script>
+</body>
+</html>
