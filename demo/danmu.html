@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="aurora">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>评价墙 · 弹幕模式</title>
+<link rel="stylesheet" href="../shared/style.css">
+<style>
+/* ============ 弹幕舞台 ============ */
+.danmu-section{
+  min-height:100vh;padding:96px 0 60px;
+  display:flex;flex-direction:column;
+  position:relative;z-index:2;
+}
+.sec-head{text-align:center;margin-bottom:34px;padding:0 5vw}
+.sec-tag{font-size:12px;letter-spacing:2.5px;color:var(--a1);font-weight:700}
+.sec-title{font-family:var(--font-display);font-size:clamp(26px,4.5vw,42px);font-weight:800;margin-top:10px}
+.sec-desc{color:var(--text-dim);font-size:14.5px;margin-top:12px}
+
+/* 舞台 */
+.stage-wrap{position:relative;flex:1;min-height:680px;margin:0 auto;width:100%;max-width:1520px;padding:0 2vw}
+.stage{
+  position:relative;height:100%;min-height:680px;overflow:hidden;
+  border:1px solid var(--border);border-radius:22px;
+  background-color:rgba(10,12,22,.5);
+  background-image:
+    radial-gradient(circle at 20% 20%,rgba(109,139,255,.10),transparent 45%),
+    radial-gradient(circle at 80% 75%,rgba(176,109,255,.10),transparent 45%);
+  background-size:cover;
+  background-position:center;
+  backdrop-filter:blur(10px);
+  -webkit-mask-image:linear-gradient(to right,transparent,#000 5%,#000 95%,transparent);
+  mask-image:linear-gradient(to right,transparent,#000 5%,#000 95%,transparent);
+}
+/* 中央柔光（背景图时减弱） */
+.stage::before{
+  content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:420px;height:420px;border-radius:50%;
+  background:radial-gradient(circle,var(--glow1),transparent 70%);
+  opacity:.35;pointer-events:none;animation:breathe 10s ease-in-out infinite;
+  z-index:0;
+}
+/* 有自定义背景图时：加暗色遮罩保证文字可读 */
+.stage.has-bg::after{
+  content:'';position:absolute;inset:0;z-index:1;
+  background:linear-gradient(180deg,rgba(7,8,15,.55),rgba(7,8,15,.75));
+  pointer-events:none;
+}
+.stage.has-bg::before{opacity:.16}
+/* 弹幕与控制条在遮罩之上 */
+.stage > .dm,
+.stage > .controls{z-index:3;position:absolute}
+@keyframes breathe{0%,100%{opacity:.25;transform:translate(-50%,-50%) scale(1)}
+  50%{opacity:.45;transform:translate(-50%,-50%) scale(1.12)}}
+
+/* ============ 弹幕轨道 ============ */
+.lane{position:absolute;left:0;right:0;height:0;pointer-events:none}
+.dm{
+  position:absolute;left:0;top:0;
+  display:inline-flex;align-items:center;gap:10px;
+  padding:9px 18px;border-radius:999px;white-space:nowrap;
+  font-size:14.5px;line-height:1.4;
+  background:rgba(16,19,34,.82);
+  border:1px solid var(--dmc,#6d8bff);
+  backdrop-filter:blur(8px);
+  box-shadow:0 4px 20px -6px var(--dmc,#6d8bff),0 0 0 1px rgba(255,255,255,.03) inset;
+  pointer-events:auto;cursor:default;
+  will-change:transform;
+  transition:box-shadow .25s,background .25s;
+}
+.dm:hover{
+  background:rgba(24,28,48,.95);
+  box-shadow:0 6px 30px -4px var(--dmc,#6d8bff),0 0 0 1px var(--dmc) inset;
+  z-index:10;
+}
+.dm .dm-av{
+  width:24px;height:24px;border-radius:50%;flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:#fff;
+  background:linear-gradient(135deg,var(--dmc),var(--dmc2,var(--a2)));
+}
+.dm .dm-name{font-weight:700;font-size:13px;color:var(--dmc)}
+.dm .dm-rel{font-size:11.5px;color:var(--text-dim)}
+.dm .dm-text{color:var(--text);max-width:520px;overflow:hidden;text-overflow:ellipsis}
+.dm .dm-st{color:#ffc94d;font-size:11px;letter-spacing:1px}
+/* 置顶的弹幕更醒目 */
+.dm.hot{
+  background:linear-gradient(120deg,rgba(109,139,255,.22),rgba(176,109,255,.18));
+  border-width:1.5px;
+}
+
+/* 底部渐变遮罩，让弹幕有纵深 */
+.stage::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:90px;
+  background:linear-gradient(to top,rgba(7,8,15,.9),transparent);
+  pointer-events:none;
+}
+
+/* ============ 控制条 ============ */
+.controls{
+  position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:10px;z-index:20;
+  padding:8px 14px;border-radius:999px;
+  background:rgba(12,14,26,.85);border:1px solid var(--border);
+  backdrop-filter:blur(14px);
+  box-shadow:0 10px 40px -12px rgba(0,0,0,.9);
+}
+.ctrl-btn{
+  width:34px;height:34px;border-radius:50%;border:1px solid var(--border-strong);
+  background:var(--surface);color:var(--text);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:var(--trans);font-size:14px;
+}
+.ctrl-btn:hover{background:linear-gradient(120deg,var(--a1),var(--a2));border-color:transparent}
+.ctrl-btn.on{background:linear-gradient(120deg,var(--a1),var(--a2));border-color:transparent}
+.ctrl-sep{width:1px;height:20px;background:var(--border)}
+.ctrl-label{font-size:12.5px;color:var(--text-dim);white-space:nowrap}
+
+/* ============ 输入你自己的弹幕 ============ */
+.dm-send{
+  display:flex;gap:10px;align-items:center;justify-content:center;
+  margin:22px auto 0;padding:0 5vw;max-width:560px;
+}
+.dm-send input{
+  flex:1;padding:12px 18px;border-radius:999px;
+  background:var(--surface);border:1px solid var(--border);
+  outline:none;font-size:14px;transition:var(--trans);
+}
+.dm-send input:focus{border-color:var(--a1);box-shadow:0 0 0 4px rgba(109,139,255,.14)}
+.dm-send button{
+  padding:12px 22px;border-radius:999px;border:none;cursor:pointer;
+  background:linear-gradient(120deg,var(--a1),var(--a2));color:#fff;
+  font-weight:600;font-size:14px;transition:var(--trans);white-space:nowrap;
+}
+.dm-send button:hover{transform:translateY(-2px);box-shadow:0 10px 28px -10px var(--glow1)}
+
+/* ============ 悬浮详情 ============ */
+.dm-pop{
+  position:fixed;z-index:200;max-width:340px;padding:18px 20px;border-radius:16px;
+  background:rgba(14,17,30,.96);border:1px solid var(--border-strong);
+  backdrop-filter:blur(18px);
+  box-shadow:0 24px 60px -16px rgba(0,0,0,.9);
+  opacity:0;transform:translateY(8px) scale(.97);pointer-events:none;
+  transition:.22s cubic-bezier(.2,.8,.2,1);
+}
+.dm-pop.show{opacity:1;transform:none}
+.dm-pop .p-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.dm-pop .p-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:700;color:#fff;font-size:15px}
+.dm-pop .p-name{font-weight:700;font-size:15px}
+.dm-pop .p-rel{font-size:12px;color:var(--text-dim)}
+.dm-pop .p-text{font-size:14.5px;line-height:1.8;color:var(--text-soft)}
+.dm-pop .p-st{margin-top:10px;color:#ffc94d;letter-spacing:2px;font-size:12.5px}
+
+.foot{text-align:center;padding:34px 0 50px;color:var(--text-dim);font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="bg-layer">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="bg-grain"></div>
+</div>
+
+<section class="danmu-section">
+  <div class="sec-head">
+    <div class="sec-tag">DANMU MODE · 弹幕模式</div>
+    <h1 class="sec-title">朋友们的话，从屏幕飘过</h1>
+    <p class="sec-desc">悬停可以细看 · 点击暂停 · 试试在下面发一条</p>
+  </div>
+
+  <div class="stage-wrap">
+    <div class="stage" id="stage">
+      <!-- 弹幕会注入到这里 -->
+      <div class="controls">
+        <button class="ctrl-btn" id="btn-toggle" title="暂停/继续">❚❚</button>
+        <button class="ctrl-btn" id="btn-speed" title="切换速度">1×</button>
+        <div class="ctrl-sep"></div>
+        <span class="ctrl-label" id="ctrl-count">0 条弹幕</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dm-send">
+    <input type="text" id="dm-input" placeholder="也让我说一句……" maxlength="60">
+    <button id="dm-submit">发送 →</button>
+  </div>
+</section>
+
+<footer class="foot">朋友说 · 弹幕模式演示 — 觉得好我就把它做成官网的评价墙</footer>
+
+<div class="dm-pop" id="dmpop"></div>
+
+<script>
+/* ===== 演示数据 ===== */
+const DATA = [
+  {name:'阿哲', relation:'朋友', rating:5, pinned:true, text:'认识你十年，从没见你对谁敷衍过。有你在的局，永远不冷场。'},
+  {name:'林小雨', relation:'同事', rating:5, text:'共事三年，你是我见过最靠谱的搭档。'},
+  {name:'大熊', relation:'同学', rating:4, text:'大学那会儿你总借我抄作业，现在成了我最想成为的那种人。'},
+  {name:'Momo', relation:'网友', rating:5, text:'虽然只在网上认识，但你每次回复都特别真诚。'},
+  {name:'老周', relation:'家人', rating:5, text:'看着你一步步走到今天，很骄傲。别太拼，记得按时吃饭。'},
+  {name:'Cathy', relation:'朋友', rating:4, text:'你的审美一直在线，做的每个东西都好看。'},
+  {name:'小凯', relation:'朋友', rating:5, text:'每次迷茫的时候和你聊聊就清晰了。'},
+  {name:'阿杰', relation:'同事', rating:5, text:'有你在的项目，我就没担心过进度。'},
+  {name:'小满', relation:'同学', rating:4, text:'你是我认识的人里，最有耐心的那个。'},
+  {name:'Luna', relation:'网友', rating:5, text:'看到你的作品就觉得，认真的人真的会发光。'},
+  {name:'老王', relation:'朋友', rating:5, text:'这么多年朋友，就没见你对谁红过脸。'},
+  {name:'Rick', relation:'同事', rating:4, text:'你的代码注释写得比我的诗还清楚。'},
+];
+
+const REL_C = {
+  '朋友':['#6d8bff','#b06dff'],
+  '同事':['#26d9c8','#6d8bff'],
+  '同学':['#b06dff','#f78c6c'],
+  '网友':['#f78c6c','#ffc94d'],
+  '家人':['#ffc94d','#26d9c8'],
+};
+const stars = n => '★'.repeat(n);
+
+/* ===== 核心引擎 ===== */
+const stage = document.getElementById('stage');
+const pop = document.getElementById('dmpop');
+const countEl = document.getElementById('ctrl-count');
+
+let paused = false;
+let speed = 1;
+let allItems = [...DATA];
+let active = [];        // 正在飞的弹幕
+let rafId = null;
+let lastTime = 0;
+let nextSpawn = 0;
+
+/* 轨道：把舞台高度分成若干条水平轨道 */
+const LANE_H = 58;
+function laneCount(){
+  return Math.max(4, Math.floor((stage.clientHeight - 150) / LANE_H));
+}
+let lanes = [];          // 每条轨道上最后一个弹幕的右侧位置（用于防止重叠）
+
+function buildLanes(){
+  const n = laneCount();
+  lanes = Array.from({length:n}, () => ({ nextFreeX: 0, lastEl: null }));
+}
+
+/* 创建一条弹幕元素 */
+function createEl(item){
+  const el = document.createElement('div');
+  const [c1, c2] = REL_C[item.relation] || ['#6d8bff','#b06dff'];
+  el.className = 'dm' + (item.pinned ? ' hot' : '');
+  el.style.setProperty('--dmc', c1);
+  el.style.setProperty('--dmc2', c2);
+  el.dataset.id = Math.random().toString(36).slice(2);
+
+  const nameHtml = item.name ? `<span class="dm-name">${item.name}</span>` : '';
+  const relHtml = item.relation ? `<span class="dm-rel">${item.relation}</span>` : '';
+  const stHtml = item.rating ? `<span class="dm-st">${stars(item.rating)}</span>` : '';
+  const avHtml = item.name ? `<span class="dm-av" style="--dmc:${c1};--dmc2:${c2}">${item.name.slice(0,1)}</span>` : '';
+
+  el.innerHTML = `${avHtml}${nameHtml}${relHtml}<span class="dm-text">${item.text}</span>${stHtml}`;
+
+  /* 悬停显示详情 */
+  el.addEventListener('mouseenter', () => showPop(el, item));
+  el.addEventListener('mouseleave', hidePop);
+  return el;
+}
+
+/* 选一条最空闲的轨道 */
+function pickLane(width){
+  const W = stage.clientWidth;
+  let best = 0, bestGap = Infinity;
+  for (let i = 0; i < lanes.length; i++){
+    // 该轨道最后一条弹幕右边缘 + 安全间距
+    const gap = W - lanes[i].nextFreeX;
+    if (gap > bestGap * 0.6 && gap >= 120){  // 有空位
+      if (gap < bestGap){ bestGap = gap; best = i; }
+    }
+  }
+  // 若全都挤满，选最空的
+  if (bestGap === Infinity){
+    let maxGap = -Infinity;
+    lanes.forEach((l,i)=>{ const g = W - l.nextFreeX; if (g > maxGap){ maxGap = g; best = i; } });
+  }
+  return best;
+}
+
+/* 生成一条弹幕并加入动画 */
+function spawn(item){
+  if (!item) return;
+  const el = createEl(item);
+  el.style.transform = `translateX(${stage.clientWidth}px)`;
+  el.style.visibility = 'hidden';
+  stage.appendChild(el);
+
+  const w = el.offsetWidth;
+  const lane = pickLane(w);
+  const y = 90 + lane * LANE_H;
+  el.style.top = y + 'px';
+  el.style.visibility = '';
+
+  const startX = stage.clientWidth + 20;
+  const duration = (10000 + Math.random() * 5000) / speed;  // 10-15s
+  const obj = {
+    el, item, x: startX, w,
+    speedPx: (stage.clientWidth + w) / duration,   // px per ms
+    lane,
+  };
+  active.push(obj);
+  lanes[lane].nextFreeX = startX + w;
+  lanes[lane].lastEl = el;
+
+  countEl.textContent = `${active.length} 条弹幕`;
+}
+
+/* 主循环 */
+function loop(t){
+  if (!lastTime) lastTime = t;
+  const dt = Math.min(t - lastTime, 50);
+  lastTime = t;
+
+  if (!paused){
+    // 移动
+    for (let i = active.length - 1; i >= 0; i--){
+      const a = active[i];
+      a.x -= a.speedPx * dt;
+      a.el.style.transform = `translateX(${a.x}px)`;
+      // 离开屏幕
+      if (a.x + a.w < -40){
+        a.el.remove();
+        active.splice(i, 1);
+        // 释放轨道
+        if (lanes[a.lane] && lanes[a.lane].lastEl === a.el){
+          lanes[a.lane].nextFreeX = -Infinity;
+        }
+      }
+    }
+
+    // 定时补充新弹幕
+    nextSpawn -= dt;
+    if (nextSpawn <= 0){
+      const shuffled = allItems[Math.floor(Math.random() * allItems.length)];
+      spawn(shuffled);
+      nextSpawn = (1400 + Math.random() * 1600) / speed;
+    }
+  }
+
+  countEl.textContent = `${active.length} 条弹幕`;
+  rafId = requestAnimationFrame(loop);
+}
+
+/* ===== 详情浮层 ===== */
+let popTimer = null;
+function showPop(el, item){
+  const rect = el.getBoundingClientRect();
+  const [c1, c2] = REL_C[item.relation] || ['#6d8bff','#b06dff'];
+  pop.innerHTML = `
+    <div class="p-head">
+      <span class="p-av" style="background:linear-gradient(135deg,${c1},${c2})">${item.name.slice(0,1)}</span>
+      <span><div class="p-name">${item.name}</div><div class="p-rel">${item.relation}</div></span>
+    </div>
+    <div class="p-text">${item.text}</div>
+    ${item.rating ? `<div class="p-st">${'★'.repeat(item.rating)}${'☆'.repeat(5-item.rating)}</div>` : ''}
+  `;
+  // 定位（优先在弹幕上方，超出则下方）
+  const pw = 340, ph = 160;
+  let left = Math.min(Math.max(rect.left, 12), window.innerWidth - pw - 12);
+  let top = rect.top - ph - 12;
+  if (top < 12) top = rect.bottom + 12;
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+  pop.classList.add('show');
+}
+
+function hidePop(){ setTimeout(()=>pop.classList.remove('show'), 80); }
+
+/* ===== 控制 ===== */
+document.getElementById('btn-toggle').addEventListener('click', e => {
+  paused = !paused;
+  e.currentTarget.textContent = paused ? '▶' : '❚❚';
+  e.currentTarget.classList.toggle('on', paused);
+});
+
+const SPEEDS = [1, 1.6, 2.4];
+let speedIdx = 0;
+document.getElementById('btn-speed').addEventListener('click', e => {
+  speedIdx = (speedIdx + 1) % SPEEDS.length;
+  const oldSpeed = speed;
+  speed = SPEEDS[speedIdx];
+  e.currentTarget.textContent = speed + '×';
+  // 立即调整正在飞的弹幕速度
+  active.forEach(a => a.speedPx = a.speedPx / oldSpeed * speed);
+});
+
+/* ===== 发送自己的弹幕 ===== */
+document.getElementById('dm-submit').addEventListener('click', sendOwn);
+document.getElementById('dm-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendOwn();
+});
+function sendOwn(){
+  const input = document.getElementById('dm-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const item = { name:'你', relation:'访客', rating:0, text, pinned:true };
+  spawn(item);
+  input.value = '';
+  input.focus();
+}
+
+/* ===== 背景图（从后端 profile.danmuBg 读取） ===== */
+async function loadBackground(){
+  try {
+    const p = await (await fetch('/api/profile')).json();
+    const bg = p && p.danmuBg;
+    if (bg) {
+      stage.style.backgroundImage = `url("${bg}"), ${getComputedStyle(stage).backgroundImage}`;
+      stage.classList.add('has-bg');
+    }
+  } catch (e) {
+    /* 拿不到就用默认渐变背景 */
+  }
+}
+
+/* ===== 启动 ===== */
+function init(){
+  buildLanes();
+  // 初始预填几条，避免开局空旷
+  const W = stage.clientWidth;
+  for (let i = 0; i < 10; i++){
+    const item = allItems[Math.floor(Math.random() * allItems.length)];
+    const el = createEl(item);
+    stage.appendChild(el);
+    const w = el.offsetWidth;
+    const lane = i % lanes.length;
+    const x = W * 0.85 - (i % 5) * (W * 0.18) - Math.random() * 60;
+    el.style.top = (90 + lane * LANE_H) + 'px';
+    el.style.transform = `translateX(${x}px)`;
+    active.push({
+      el, item, x, w,
+      speedPx: (W + w) / (11000 + Math.random() * 4000),
+      lane,
+    });
+    lanes[lane].nextFreeX = x + w;
+  }
+  nextSpawn = 600;
+  rafId = requestAnimationFrame(loop);
+}
+
+window.addEventListener('resize', () => {
+  const n = laneCount();
+  if (n !== lanes.length) buildLanes();
+});
+
+loadBackground();
+init();
+</script>
+</body>
+</html>

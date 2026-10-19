@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="aurora">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>评价墙风格对比 · 朋友说</title>
+<link rel="stylesheet" href="../shared/style.css">
+<style>
+/* ============ 演示页通用 ============ */
+body{background:var(--bg)}
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;
+  padding:12px 16px;
+  background:rgba(7,8,15,.82);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+}
+.topbar a{
+  padding:8px 16px;border-radius:999px;font-size:13.5px;font-weight:600;
+  color:var(--text-soft);transition:var(--trans);white-space:nowrap;
+}
+.topbar a:hover{color:var(--text);background:var(--surface-2)}
+.topbar a.on{background:linear-gradient(120deg,var(--a1),var(--a2));color:#fff}
+
+.style-sec{min-height:100vh;padding:96px 5vw 80px;position:relative}
+.sec-head{text-align:center;margin-bottom:44px}
+.sec-tag{font-size:12px;letter-spacing:2.5px;color:var(--a1);font-weight:700}
+.sec-title{font-family:var(--font-display);font-size:clamp(26px,4vw,40px);font-weight:800;margin-top:10px}
+.sec-desc{color:var(--text-dim);font-size:14.5px;margin-top:12px;max-width:520px;margin-left:auto;margin-right:auto}
+
+/* ============ 风格一：星图 ============ */
+.stardust{
+  position:relative;height:62vh;max-width:960px;margin:0 auto;
+  border:1px solid var(--border);border-radius:20px;
+  background:radial-gradient(circle at 50% 50%,rgba(109,139,255,.07),transparent 60%),var(--surface);
+}
+.stardust::before{content:'';position:absolute;top:50%;left:50%;width:170px;height:170px;transform:translate(-50%,-50%);
+  border-radius:50%;background:radial-gradient(circle,var(--glow1),transparent 70%);opacity:.5}
+.snode{position:absolute;transform:translate(-50%,-50%);width:15px;height:15px;border:none;background:none;cursor:pointer}
+.snode i{position:absolute;inset:0;border-radius:50%;background:var(--c);
+  box-shadow:0 0 10px var(--c),0 0 24px var(--c);animation:fl 5s ease-in-out infinite}
+.snode::after{content:'';position:absolute;inset:-8px;border-radius:50%;border:1px solid var(--c);opacity:0;transition:.25s}
+.snode:hover::after{opacity:.6;inset:-12px}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.snode .pop{
+  position:absolute;bottom:26px;left:50%;transform:translateX(-50%) translateY(8px) scale(.95);
+  width:250px;padding:15px;border-radius:14px;text-align:left;
+  background:rgba(15,18,32,.92);border:1px solid var(--border-strong);
+  backdrop-filter:blur(14px);opacity:0;pointer-events:none;transition:.25s;z-index:5;
+  box-shadow:0 22px 50px -14px rgba(0,0,0,.85);
+}
+.snode:hover .pop{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+.pop b{font-size:14px}.pop em{font-style:normal;font-size:11.5px;color:var(--text-dim);display:block}
+.pop p{font-size:13px;color:var(--text-soft);line-height:1.65;margin:8px 0 6px}
+.pop .st{color:#ffc94d;font-size:11px;letter-spacing:1px}
+
+/* ============ 风格二：Bento 瀑布 ============ */
+.bento{
+  columns:3;column-gap:18px;max-width:960px;margin:0 auto;
+}
+@media(max-width:900px){.bento{columns:2}}
+@media(max-width:560px){.bento{columns:1}}
+.bcard{
+  break-inside:avoid;margin-bottom:18px;padding:24px;border-radius:18px;
+  background:var(--surface);border:1px solid var(--border);
+  backdrop-filter:blur(12px);transition:var(--trans);
+  opacity:0;transform:translateY(24px);
+}
+.bcard.in{opacity:1;transform:none;transition:opacity .6s ease,transform .6s cubic-bezier(.2,.8,.2,1),border-color .3s,box-shadow .3s}
+.bcard:hover{border-color:var(--a1);box-shadow:0 18px 44px -18px var(--glow1);transform:translateY(-4px)}
+.bcard.big{background:linear-gradient(135deg,rgba(109,139,255,.14),rgba(176,109,255,.10));border-color:rgba(109,139,255,.4)}
+.bhead{display:flex;gap:11px;align-items:center;margin-bottom:13px}
+.bhead .av{width:38px;height:38px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+  font-weight:700;color:#fff;font-size:15px;background:linear-gradient(135deg,var(--c1,var(--a1)),var(--c2,var(--a2)))}
+.bhead strong{font-size:14.5px;display:block}
+.bhead em{font-style:normal;font-size:12px;color:var(--text-dim)}
+.btext{font-size:14.5px;line-height:1.8;color:var(--text-soft)}
+.bstars{margin-top:12px;color:#ffc94d;letter-spacing:2px;font-size:12.5px}
+.bpin{float:right;font-size:11px;color:var(--a1);border:1px solid var(--a1);border-radius:999px;padding:2px 10px}
+
+/* ============ 风格三：3D 环廊 ============ */
+.ring-stage{height:440px;max-width:960px;margin:0 auto;perspective:1400px;position:relative;
+  display:flex;align-items:center;justify-content:center;overflow:hidden}
+.ring{position:relative;width:300px;height:300px;transform-style:preserve-3d;transition:transform 1s cubic-bezier(.3,.9,.3,1)}
+.rcard{
+  position:absolute;top:0;left:50%;width:280px;margin-left:-140px;height:290px;
+  padding:26px;border-radius:18px;backface-visibility:hidden;
+  background:rgba(15,18,32,.9);border:1px solid var(--border-strong);
+  display:flex;flex-direction:column;justify-content:space-between;
+  box-shadow:0 24px 60px -20px rgba(0,0,0,.8);
+}
+.rcard .btext{font-size:13.5px}
+.ring-nav{display:flex;gap:10px;justify-content:center;margin-top:26px}
+.ring-nav button{width:44px;height:44px;border-radius:50%;border:1px solid var(--border-strong);
+  background:var(--surface);color:var(--text);font-size:17px;cursor:pointer;transition:var(--trans)}
+.ring-nav button:hover{background:linear-gradient(120deg,var(--a1),var(--a2));border-color:transparent}
+.ring-dots{display:flex;gap:7px;justify-content:center;margin-top:16px}
+.ring-dots i{width:7px;height:7px;border-radius:50%;background:var(--text-dim);opacity:.4;transition:.3s}
+.ring-dots i.on{opacity:1;background:var(--a1);box-shadow:0 0 8px var(--a1)}
+
+/* ============ 风格四：时间轴 ============ */
+.tline{position:relative;max-width:760px;margin:0 auto;padding:10px 0}
+.tline::before{content:'';position:absolute;top:0;bottom:0;left:50%;width:2px;
+  background:linear-gradient(to bottom,transparent,var(--a1) 12%,var(--a2) 88%,transparent)}
+.titem{position:relative;width:calc(50% - 34px);margin-bottom:30px;padding:22px;
+  border-radius:16px;background:var(--surface);border:1px solid var(--border);
+  opacity:0;transform:translateX(-30px);transition:.6s cubic-bezier(.2,.8,.2,1)}
+.titem:nth-child(even){margin-left:calc(50% + 34px);transform:translateX(30px)}
+.titem.in{opacity:1;transform:none}
+.titem::before{content:'';position:absolute;top:26px;width:11px;height:11px;border-radius:50%;
+  background:var(--c,var(--a1));box-shadow:0 0 12px var(--c,var(--a1))}
+.titem:nth-child(odd)::before{right:-40px}
+.titem:nth-child(even)::before{left:-40px}
+@media(max-width:700px){
+  .tline::before{left:12px}
+  .titem{width:auto;margin-left:40px !important;transform:translateX(30px)}
+  .titem::before{left:-33px !important;right:auto}
+}
+
+/* ============ 风格五：引语画廊 ============ */
+.quotes{
+  display:flex;gap:26px;overflow-x:auto;scroll-snap-type:x mandatory;
+  max-width:960px;margin:0 auto;padding:10px 4px 26px;
+  scrollbar-width:thin;
+}
+.qcard{
+  flex:0 0 min(400px,82vw);scroll-snap-align:center;
+  padding:38px 34px;border-radius:20px;position:relative;
+  background:linear-gradient(160deg,var(--surface),rgba(255,255,255,.02));
+  border:1px solid var(--border);transition:var(--trans);
+}
+.qcard:hover{border-color:var(--a1);transform:translateY(-4px)}
+.qmark{font-family:Georgia,serif;font-size:74px;line-height:.6;color:var(--a1);opacity:.45;display:block;margin-bottom:20px}
+.qtext{font-size:16.5px;line-height:1.9;color:var(--text);font-style:italic}
+.qmeta{display:flex;gap:12px;align-items:center;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
+.qmeta .av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:700;color:#fff;background:linear-gradient(135deg,var(--c1,var(--a1)),var(--c2,var(--a2)));font-size:15px}
+.qmeta strong{font-size:14.5px;display:block}
+.qmeta em{font-style:normal;font-size:12px;color:var(--text-dim)}
+.qstars{margin-left:auto;color:#ffc94d;font-size:12px;letter-spacing:2px}
+.qhint{text-align:center;color:var(--text-dim);font-size:12.5px;margin-top:4px}
+
+.foot{text-align:center;padding:40px 0 60px;color:var(--text-dim);font-size:13px}
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <a href="#s1" class="on">① 星图</a>
+  <a href="#s2">② Bento 瀑布</a>
+  <a href="#s3">③ 3D 环廊</a>
+  <a href="#s4">④ 时间轴</a>
+  <a href="#s5">⑤ 引语画廊</a>
+</nav>
+
+<!-- ========== ① 星图 ========== -->
+<section class="style-sec" id="s1">
+  <div class="sec-head">
+    <div class="sec-tag">STYLE 01 · 当前版本</div>
+    <h2 class="sec-title">星图 Stardust</h2>
+    <p class="sec-desc">每条留言是一颗发光的星,按关系着色。鼠标靠近会被轻微推开,悬停浮出预览,点击看全文。沉浸感最强,适合首屏大场景。</p>
+  </div>
+  <div class="stardust" id="stardust"></div>
+</section>
+
+<!-- ========== ② Bento 瀑布 ========== -->
+<section class="style-sec" id="s2">
+  <div class="sec-head">
+    <div class="sec-tag">STYLE 02</div>
+    <h2 class="sec-title">Bento 瀑布</h2>
+    <p class="sec-desc">经典瀑布流 + 玻璃卡片,首条置顶放大高亮。信息密度高、浏览效率好,留言多的时候最实用。</p>
+  </div>
+  <div class="bento" id="bento"></div>
+</section>
+
+<!-- ========== ③ 3D 环廊 ========== -->
+<section class="style-sec" id="s3">
+  <div class="sec-head">
+    <div class="sec-tag">STYLE 03</div>
+    <h2 class="sec-title">3D 环廊 Carousel</h2>
+    <p class="sec-desc">卡片围成一圈缓慢旋转,点击箭头切换。仪式感和记忆点拉满,适合留言数量适中的场景。</p>
+  </div>
+  <div class="ring-stage">
+    <div class="ring" id="ring"></div>
+  </div>
+  <div class="ring-nav">
+    <button id="ring-prev">‹</button>
+    <button id="ring-next">›</button>
+  </div>
+  <div class="ring-dots" id="ring-dots"></div>
+</section>
+
+<!-- ========== ④ 时间轴 ========== -->
+<section class="style-sec" id="s4">
+  <div class="sec-head">
+    <div class="sec-tag">STYLE 04</div>
+    <h2 class="sec-title">时间轴 Timeline</h2>
+    <p class="sec-desc">按时间排列、左右交错展开,强调"一路走来的陪伴感"。适合突出留言的先后与故事性。</p>
+  </div>
+  <div class="tline" id="tline"></div>
+</section>
+
+<!-- ========== ⑤ 引语画廊 ========== -->
+<section class="style-sec" id="s5">
+  <div class="sec-head">
+    <div class="sec-tag">STYLE 05</div>
+    <h2 class="sec-title">引语画廊 Quotes</h2>
+    <p class="sec-desc">杂志式大引号排版,横向滑动浏览。安静、高级、有文字之美,适合精选过的少量留言。</p>
+  </div>
+  <div class="quotes" id="quotes"></div>
+  <p class="qhint">← 左右滑动浏览 →</p>
+</section>
+
+<footer class="foot">朋友说 · 评价墙风格对比演示 — 选中哪版告诉我,我把它换成官网正式样式</footer>
+
+<script>
+/* ===== 演示数据 ===== */
+const DATA = [
+  {name:'阿哲', relation:'朋友', rating:5, pinned:true,  text:'认识你十年，从没见你对谁敷衍过。有你在的局，永远不冷场。愿你一直被这个世界温柔以待。'},
+  {name:'林小雨', relation:'同事', rating:5, text:'共事三年，你是我见过最靠谱的搭档。再烂的摊子到你手里都能理出头绪，真心佩服。'},
+  {name:'大熊', relation:'同学', rating:4, text:'大学那会儿你总借我抄作业哈哈哈，现在倒好，成了我最想成为的那种人。继续加油。'},
+  {name:'Momo', relation:'网友', rating:5, text:'虽然只在网上认识，但你每次回复都特别真诚。隔着屏幕都能感觉到你是个温暖的人。'},
+  {name:'老周', relation:'家人', rating:5, text:'看着你一步步走到今天，很骄傲。别太拼，记得按时吃饭。累了就回家。'},
+  {name:'Cathy', relation:'朋友', rating:4, text:'你的审美一直在线，做的每个东西都好看。别总说自己不行，你比你以为的厉害多了。'},
+  {name:'小凯', relation:'朋友', rating:5, text:'每次迷茫的时候和你聊聊就清晰了。你总能在关键处点醒我，谢谢一直都在。'},
+];
+const REL_C = {'朋友':'#6d8bff','同事':'#26d9c8','同学':'#b06dff','网友':'#f78c6c','家人':'#ffc94d'};
+const stars = n => '★'.repeat(n) + '☆'.repeat(Math.max(0, 5-n));
+const av = n => n.slice(0,1).toUpperCase();
+const short = (s,l=64) => s.length>l ? s.slice(0,l)+'…' : s;
+
+/* ===== ① 星图 ===== */
+(function(){
+  const box = document.getElementById('stardust');
+  const n = DATA.length, golden = Math.PI*(3-Math.sqrt(5));
+  box.innerHTML = DATA.map((t,i)=>{
+    const r = Math.sqrt((i+.5)/n) * 38;
+    const a = i*golden;
+    const x = 50 + Math.cos(a)*r*1.15, y = 50 + Math.sin(a)*r*1.35;
+    const c = REL_C[t.relation]||'#6d8bff';
+    return `<button class="snode" style="left:${x}%;top:${y}%;--c:${c}">
+      <i style="animation-delay:${i*.3}s"></i>
+      <span class="pop"><b>${t.name}</b><em>${t.relation}${t.pinned?' · 置顶':''}</em>
+      <p>${short(t.text)}</p><span class="st">${stars(t.rating)}</span></span>
+    </button>`;
+  }).join('');
+})();
+
+/* ===== ② Bento 瀑布 + 入场动画 ===== */
+(function(){
+  const box = document.getElementById('bento');
+  box.innerHTML = DATA.map((t,i)=>`
+    <article class="bcard ${i===0?'big':''}" style="--c1:${REL_C[t.relation]};--c2:${i%2?'#b06dff':'#26d9c8'}">
+      ${t.pinned?'<span class="bpin">置顶</span>':''}
+      <div class="bhead"><span class="av">${av(t.name)}</span>
+        <span><strong>${t.name}</strong><em>${t.relation}</em></span></div>
+      <p class="btext">${t.text}</p>
+      <div class="bstars">${stars(t.rating)}</div>
+    </article>`).join('');
+  const io = new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}
+  }),{threshold:.15});
+  box.querySelectorAll('.bcard').forEach((c,i)=>{c.style.transitionDelay=(i%3)*.12+'s';io.observe(c)});
+})();
+
+/* ===== ③ 3D 环廊 ===== */
+(function(){
+  const ring = document.getElementById('ring');
+  const dots = document.getElementById('ring-dots');
+  const n = DATA.length, R = 380;
+  ring.innerHTML = DATA.map((t,i)=>{
+    const ang = i*360/n;
+    return `<div class="rcard" style="transform:rotateY(${ang}deg) translateZ(${R}px)">
+      <div><div class="bhead"><span class="av" style="--c1:${REL_C[t.relation]}">${av(t.name)}</span>
+      <span><strong>${t.name}</strong><em>${t.relation}</em></span></div></div>
+      <p class="btext">${short(t.text,80)}</p>
+      <div class="bstars">${stars(t.rating)}</div>
+    </div>`;
+  }).join('');
+  dots.innerHTML = DATA.map(()=>'<i></i>').join('');
+  let idx = 0;
+  function render(){
+    ring.style.transform = `rotateY(${-idx*360/n}deg)`;
+    dots.querySelectorAll('i').forEach((d,i)=>d.classList.toggle('on',i===idx));
+  }
+  document.getElementById('ring-prev').onclick = ()=>{idx=(idx-1+n)%n;render()};
+  document.getElementById('ring-next').onclick = ()=>{idx=(idx+1)%n;render()};
+  let auto = setInterval(()=>{idx=(idx+1)%n;render()},4000);
+  document.querySelector('.ring-stage').addEventListener('mouseenter',()=>clearInterval(auto));
+  document.querySelector('.ring-stage').addEventListener('mouseleave',()=>{auto=setInterval(()=>{idx=(idx+1)%n;render()},4000)});
+  render();
+})();
+
+/* ===== ④ 时间轴 ===== */
+(function(){
+  const box = document.getElementById('tline');
+  const fmt = i => {const d=new Date(Date.now()-(i+1)*86400000*3);return `${d.getMonth()+1}月${d.getDate()}日`};
+  box.innerHTML = DATA.map((t,i)=>`
+    <div class="titem" style="--c:${REL_C[t.relation]};transition-delay:${(i%2)*.1}s">
+      <div class="bhead"><span class="av" style="--c1:${REL_C[t.relation]};--c2:${i%2?'#b06dff':'#26d9c8'}">${av(t.name)}</span>
+      <span><strong>${t.name}</strong><em>${t.relation} · ${fmt(i)}</em></span></div>
+      <p class="btext">${t.text}</p>
+      <div class="bstars">${stars(t.rating)}</div>
+    </div>`).join('');
+  const io = new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}
+  }),{threshold:.2});
+  box.querySelectorAll('.titem').forEach(t=>io.observe(t));
+})();
+
+/* ===== ⑤ 引语画廊 ===== */
+(function(){
+  const box = document.getElementById('quotes');
+  box.innerHTML = DATA.map(t=>`
+    <figure class="qcard" style="--c1:${REL_C[t.relation]};--c2:${Math.random()>.5?'#b06dff':'#26d9c8'}">
+      <span class="qmark">“</span>
+      <blockquote class="qtext">${t.text}</blockquote>
+      <figcaption class="qmeta"><span class="av">${av(t.name)}</span>
+        <span><strong>${t.name}</strong><em>${t.relation}</em></span>
+        <span class="qstars">${stars(t.rating)}</span></figcaption>
+    </figure>`).join('');
+})();
+
+/* ===== 顶部导航高亮 ===== */
+const links = document.querySelectorAll('.topbar a');
+const io2 = new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.isIntersecting){
+    links.forEach(l=>l.classList.toggle('on', l.getAttribute('href')==='#'+e.target.id));
+  }
+}),{threshold:.4});
+document.querySelectorAll('.style-sec').forEach(s=>io2.observe(s));
+</script>
+</body>
+</html>

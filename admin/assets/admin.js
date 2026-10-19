@@ -125,6 +125,8 @@
   }
 
   /* ================= 渲染：资料 ================= */
+  let bgData = '';          // 当前背景图（base64）
+
   async function renderProfile() {
     const p = await DB.getProfile();
     $('#side-logo').textContent = p.name;
@@ -134,7 +136,54 @@
     $('#p-now').value = (p.now || []).map(n => `${n.k}：${n.v}`).join('\n');
     $('#p-links').value = (p.links || []).map(l => `${l.name}|${l.url}`).join('\n');
     $$('#theme-opts .opt').forEach(o => o.classList.toggle('active', o.dataset.v === (p.theme || 'aurora')));
+    bgData = p.danmuBg || '';
+    updateBgPreview();
   }
+
+  /* ================= 背景图上传 ================= */
+  function updateBgPreview() {
+    const box = $('#bg-preview');
+    if (bgData) {
+      box.style.backgroundImage = `url("${bgData}")`;
+      box.innerHTML = '';
+    } else {
+      box.style.backgroundImage = '';
+      box.innerHTML = '<span class="dim">未设置背景，使用默认渐变</span>';
+    }
+  }
+
+  $('#p-bg').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!/^image\//.test(file.type)) { alert('请选择图片文件'); return; }
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        // 压缩到最长边 1600，质量 0.82
+        const MAX = 1600;
+        let { width: w, height: h } = img;
+        const scale = Math.min(1, MAX / Math.max(w, h));
+        w = Math.round(w * scale); h = Math.round(h * scale);
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        bgData = c.toDataURL('image/jpeg', 0.82);
+        updateBgPreview();
+        $('#save-tip').textContent = '图片已就绪，记得点「保存资料」';
+        setTimeout(() => $('#save-tip').textContent = '', 3000);
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  $('#bg-clear').addEventListener('click', () => {
+    bgData = '';
+    $('#p-bg').value = '';
+    updateBgPreview();
+  });
 
   /* ================= 资料表单 ================= */
   $$('#theme-opts .opt').forEach(el => {
@@ -160,6 +209,7 @@
       about: $('#p-about').value.trim(),
       now, links,
       theme: document.querySelector('#theme-opts .opt.active')?.dataset.v || 'aurora',
+      danmuBg: bgData,
     });
     $('#side-logo').textContent = $('#p-name').value.trim();
     const tip = $('#save-tip');

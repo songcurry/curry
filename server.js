@@ -63,6 +63,7 @@ const DEFAULT_PROFILE = {
     { name: 'Email', icon: '@', url: 'mailto:hello@example.com' },
   ],
   theme: 'aurora',
+  danmuBg: '',   // 弹幕墙背景图（base64 或图片 URL），空则用默认渐变
 };
 
 function getProfile() {

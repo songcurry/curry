@@ -105,6 +105,22 @@
             <span class="opt" data-v="mono">极简黑金</span>
           </div>
         </div>
+
+        <div class="field">
+          <label>弹幕墙背景图 <span class="dim">（可选，建议横图 16:9）</span></label>
+          <div class="bg-upload">
+            <div class="bg-preview" id="bg-preview">
+              <span class="dim">未设置背景，使用默认渐变</span>
+            </div>
+            <div class="bg-actions">
+              <label class="btn btn-sm" for="p-bg">上传图片</label>
+              <input type="file" id="p-bg" accept="image/*" hidden>
+              <button type="button" class="btn btn-sm btn-ghost" id="bg-clear">清除</button>
+              <p class="hint" style="margin-top:8px">图片会自动压缩后保存，尺寸建议 1600×900 以内</p>
+            </div>
+          </div>
+        </div>
+
         <button type="submit" class="btn btn-primary">保存资料</button>
         <span class="save-tip dim" id="save-tip"></span>
       </form>
